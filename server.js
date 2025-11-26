@@ -1,18 +1,11 @@
-// const express = require('express');
-// const app = express();
-// const PORT = process.env.PORT || 3000;
+const dotenv = require('dotenv');
 
-// app.get('/', (req, res) => {
-//   res.send('Hello World!');
-// });
+// Lê as variáveis do .env
+dotenv.config();
 
-// app.listen(PORT, () => {
-//   console.log(`Server listening on port ${PORT}`);
-// });
-
-// Handles server startup and port binding
+// Importa a configuração do Express
 const app = require('./app');
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

@@ -1,21 +1,32 @@
+// app.js
+
 // Configures Express app, middleware, and routes
 const express = require('express');
 const app = express();
 
+// --- Importar Módulos ---
+const forgeRoutes = require('./src/routes/forgeRoutes');
+const errorHandler = require('./src/middleware/errorHandler'); // Importa o middleware de tratamento de erros
+const logger = require('./src/middleware/logger');
+const path = require('path');// Importa o middleware de log/tempo de resposta
+
+// --- Middlewares Gerais ---
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware para processar payloads JSON
 app.use(express.json());
-app.use((req, res, next) => {
-    const start = Date.now();
 
-    res.on('finish', () => {
-        const duration = Date.now() - start;
-        console.log(`${req.method} ${req.url} - ${duration}ms`);
-    });
+// Middleware de Log/Tempo de Resposta
+app.use(logger);
 
-    next();
-});
 
+// --- Definição de Rotas Gerais ---
+
+// Rotas do seu app.js original
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+    // Redireciona para o index.html na pasta public
+    res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
 });
 
 app.get('/health', (req, res) => {
@@ -39,6 +50,7 @@ app.get('/error-route', (req, res) => {
     throw new Error('Something went wrong!');
 });
 
+// Função auxiliar para rota /external
 async function fetchPost(userId, limit) {
     try {
         const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${userId}&_limit=${limit}`);
@@ -56,13 +68,15 @@ app.get('/external', async (req, res) => {
     res.json({ ok: true, data: posts, params: { userId, limit } });
 });
 
-// Global Error Middleware
-app.use((err, req, res, next) => {
-    res.status(500).json({
-        ok: false,
-        error: err.message || 'Internal server error',
-    });
-});
+// --- Montagem das Rotas Específicas ---
+
+// Monta as rotas da API Forge/Autodesk
+app.use(forgeRoutes); // Todas as rotas do APS (incluindo Auth) vão para forgeRoutes
+
+// --- Global Error Middleware ---
+
+// Garante que captura erros de todas as rotas e middlewares anteriores
+app.use(errorHandler);
 
 
 module.exports = app;

@@ -1,0 +1,181 @@
+/* --- Variáveis e Reset Básico --- */
+:root {
+    --color-primary: #0078d4;   /* Azul Autodesk/Microsoft */
+    --color-secondary: #00bfff; /* Azul Claro para Destaque */
+    --color-background: #1e1e1e; /* Fundo Escuro Principal */
+    --color-surface: #252526;    /* Cor para Sidebar e Cards */
+    --color-text-light: #ffffff;
+    --color-text-dark: #cccccc;
+    --font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-stack);
+    background-color: var(--color-background);
+    color: var(--color-text-light);
+    display: flex;
+    flex-direction: column; /* Organiza header e main content */
+    height: 100vh;
+    overflow: hidden; /* Evita scrolls indesejados */
+}
+
+/* --- Header / Barra de Controlo (Foco e Branding) --- */
+.header-bar {
+    padding: 10px 20px;
+    background: var(--color-surface);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    min-height: 50px;
+    z-index: 10;
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--color-secondary);
+    margin-right: 30px;
+}
+
+/* Agrupamento de Controlos de Entrada */
+.input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-left: auto; /* Empurra para a direita */
+}
+
+/* --- Content Principal (Viewer e Sidebar) --- */
+.main-content {
+    display: flex;
+    flex: 1; /* Ocupa o restante do espaço vertical */
+}
+
+/* Sidebar para Navegação de Hubs/Projetos (A ser implementado) */
+.sidebar {
+    width: 300px;
+    background-color: var(--color-surface);
+    padding: 15px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+}
+
+.sidebar h3 {
+    color: var(--color-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+    margin-top: 0;
+}
+
+/* Contêiner do Viewer */
+#viewerContainer {
+    position: relative;
+    flex: 1; /* Ocupa todo o espaço restante horizontal */
+    overflow: hidden;
+    background-color: #0d0d0d; /* Fundo muito escuro para o ambiente 3D */
+}
+
+/* --- Elementos de Formulário e Interação --- */
+
+/* Botões */
+button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+    transition: background-color 0.2s, opacity 0.2s;
+    font-weight: 600;
+}
+
+button:hover:not(:disabled) {
+    background-color: var(--color-secondary);
+    color: var(--color-background);
+}
+
+button:disabled {
+    background-color: #444;
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* Input de URN */
+#urnInput {
+    padding: 8px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    width: 350px;
+    background-color: #333;
+    color: var(--color-text-light);
+}
+
+/* Indicador de Status */
+.status {
+    margin-left: 20px;
+    padding: 5px 10px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.status.authenticated {
+    background-color: #006400; /* Verde escuro profissional */
+    color: var(--color-text-light);
+    border-color: #008000;
+}
+
+/* --- Estilos da Árvore de Navegação (Sidebar) --- */
+
+#dataTree {
+    margin-top: 15px;
+}
+
+.node-item {
+    padding: 8px 10px;
+    margin-bottom: 2px;
+    cursor: pointer;
+    background-color: var(--color-surface);
+    color: var(--color-text-dark);
+    border-radius: 3px;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.node-item:hover {
+    background-color: #38383a; /* Cor mais clara ao passar o rato */
+    color: var(--color-text-light);
+}
+
+.node-icon {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+.loading-message, .error-message {
+    padding: 10px;
+    font-style: italic;
+    font-size: 0.9em;
+    color: #999;
+}
+
+.error-message {
+    color: #ff5555;
+    background-color: #3e2020;
+    border-left: 3px solid #ff0000;
+}
+
+.back-button {
+    width: 100%;
+    margin-bottom: 10px;
+    background-color: #444;
+}
+
+.back-button:hover {
+    background-color: #555;
+}
