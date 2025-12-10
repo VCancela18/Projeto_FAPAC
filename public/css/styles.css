@@ -1,9 +1,11 @@
+/* public/styles.css */
+
 /* --- Variáveis e Reset Básico --- */
 :root {
-    --color-primary: #0078d4;   /* Azul Autodesk/Microsoft */
-    --color-secondary: #00bfff; /* Azul Claro para Destaque */
+    --color-primary: #0078d4;
+    --color-secondary: #00bfff;
     --color-background: #1e1e1e; /* Fundo Escuro Principal */
-    --color-surface: #252526;    /* Cor para Sidebar e Cards */
+    --color-surface: #252526;    /* Cor para Header/Sidebar (deve ser clara o suficiente) */
     --color-text-light: #ffffff;
     --color-text-dark: #cccccc;
     --font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -16,12 +18,12 @@ body {
     background-color: var(--color-background);
     color: var(--color-text-light);
     display: flex;
-    flex-direction: column; /* Organiza header e main content */
+    flex-direction: column;
     height: 100vh;
-    overflow: hidden; /* Evita scrolls indesejados */
+    overflow: hidden;
 }
 
-/* --- Header / Barra de Controlo (Foco e Branding) --- */
+/* --- Header / Barra de Controlo (Visível no topo) --- */
 .header-bar {
     padding: 10px 20px;
     background: var(--color-surface);
@@ -39,47 +41,37 @@ body {
     margin-right: 30px;
 }
 
-/* Agrupamento de Controlos de Entrada */
 .input-group {
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-left: auto; /* Empurra para a direita */
+    margin-left: 20px;
 }
 
-/* --- Content Principal (Viewer e Sidebar) --- */
+/* --- Content Principal (Sidebar + Viewer) --- */
 .main-content {
     display: flex;
-    flex: 1; /* Ocupa o restante do espaço vertical */
+    flex: 1;
 }
 
-/* Sidebar para Navegação de Hubs/Projetos (A ser implementado) */
 .sidebar {
     width: 300px;
     background-color: var(--color-surface);
     padding: 15px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
     overflow-y: auto;
-}
-
-.sidebar h3 {
-    color: var(--color-secondary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 5px;
-    margin-top: 0;
+    flex-shrink: 0; /* Impede que o viewer a comprima */
 }
 
 /* Contêiner do Viewer */
 #viewerContainer {
     position: relative;
-    flex: 1; /* Ocupa todo o espaço restante horizontal */
+    flex: 1;
     overflow: hidden;
-    background-color: #0d0d0d; /* Fundo muito escuro para o ambiente 3D */
+    background-color: #0d0d0d;
 }
 
 /* --- Elementos de Formulário e Interação --- */
-
-/* Botões */
 button {
     padding: 8px 15px;
     border: none;
@@ -102,7 +94,6 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* Input de URN */
 #urnInput {
     padding: 8px;
     border: 1px solid #444;
@@ -112,9 +103,8 @@ button:disabled {
     color: var(--color-text-light);
 }
 
-/* Indicador de Status */
 .status {
-    margin-left: 20px;
+    margin-left: auto;
     padding: 5px 10px;
     border: 1px solid #555;
     border-radius: 4px;
@@ -123,12 +113,18 @@ button:disabled {
 }
 
 .status.authenticated {
-    background-color: #006400; /* Verde escuro profissional */
+    background-color: #006400;
     color: var(--color-text-light);
     border-color: #008000;
 }
 
 /* --- Estilos da Árvore de Navegação (Sidebar) --- */
+.sidebar h3 {
+    color: var(--color-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+    margin-top: 0;
+}
 
 #dataTree {
     margin-top: 15px;
@@ -148,7 +144,7 @@ button:disabled {
 }
 
 .node-item:hover {
-    background-color: #38383a; /* Cor mais clara ao passar o rato */
+    background-color: #38383a;
     color: var(--color-text-light);
 }
 
