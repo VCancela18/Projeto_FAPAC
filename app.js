@@ -6,6 +6,7 @@ const app = express();
 
 // --- Importar Módulos ---
 const forgeRoutes = require('./src/routes/forgeRoutes');
+const materiaisRoutes = require('./src/routes/materiaisRoutes');
 const errorHandler = require('./src/middleware/errorHandler'); // Importa o middleware de tratamento de erros
 const logger = require('./src/middleware/logger');
 const path = require('path');// Importa o middleware de log/tempo de resposta
@@ -72,6 +73,9 @@ app.get('/external', async (req, res) => {
 
 // Monta as rotas da API Forge/Autodesk
 app.use(forgeRoutes); // Todas as rotas do APS (incluindo Auth) vão para forgeRoutes
+
+// Monta as rotas dos Materiais do Airtable
+app.use('/api/materiais', materiaisRoutes);
 
 // --- Global Error Middleware ---
 
