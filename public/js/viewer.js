@@ -86,20 +86,20 @@ function initializeViewer() {
 
 async function loadMaterials() {
     try {
-        const response = await fetch(AIRTABLE_API_TOKEN);
+        const response = await fetch('/api/materiais');
         const data = await response.json();
 
         console.log("Dados recebidos da API:", data);
 
-        // A API devolve um array diretamente
-        const materials = Array.isArray(data) ? data : data.records;
+        // A API pode devolver { ok:true, data: [...] } ou um array
+        const materials = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : data.records);
 
         if (!materials || materials.length === 0) {
             materialFiltersContainer.innerHTML = "<p>Sem materiais disponíveis.</p>";
             return;
         }
 
-        // Gerar lista de categorias únicas
+        // Gerar lista de categorias únicas (usando nomes de campos da sua Airtable)
         const categories = [...new Set(materials.map(m => m["Categoria"]))];
 
         materialFiltersContainer.innerHTML = ""; // Limpa a secção de filtros
@@ -116,6 +116,10 @@ async function loadMaterials() {
         });
 
         console.log("Categorias encontradas:", categories);
+
+        // Guarda globalmente para a tabela
+        allMaterials = materials.map(r => ({ id: r.id, name: r['Nome do Material'] || r.name || r['Name'], category: r['Categoria'] || r.category, supplier: r['Fornecedor'] || r.supplier, bimId: r['BIM ID'] }));
+        renderMaterialsTable(allMaterials);
 
     } catch (error) {
         console.error("Erro ao carregar materiais:", error);
@@ -267,8 +271,8 @@ function applyFilters() {
 // --- 6. INÍCIO DA APLICAÇÃO ---
 
 async function startApp() {
-    await loadMaterials()g;   // ← Agora funciona corretamente
     await checkAuthStatus();
+    await loadMaterials();
 }
 
 startApp();
