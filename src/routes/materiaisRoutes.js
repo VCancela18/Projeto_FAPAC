@@ -2,9 +2,11 @@
 
 const express = require('express');
 const router = express.Router();
-const airtableController = require('../controllers/AirtableController');
+const { getMateriais, getMaterialById } = require('../controllers/AirTableController');
 
-// A rota final fica: GET /api/materiais
-router.get('/', airtableController.getMaterials);
+// GET /api/materiais
+router.get('/', getMateriais);
+// GET /api/materiais/:id
+router.get('/:id', getMaterialById);
 
 module.exports = router;

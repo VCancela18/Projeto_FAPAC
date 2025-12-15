@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Imports necessários
 // Assumimos que estes controllers existem na sua estrutura
-const { getAuthorizationUrl, getAccessToken, getInternalToken } = require('../utils/apsAuth'); 
+const { getAuthorizationUrl, getAccessToken, getInternalToken } = require('../../utils/apsAuth'); 
 const hubsController = require('../controllers/hubsController');
 const projectsController = require('../controllers/projectsController');
 const contentsController = require('../controllers/ContentsController');
