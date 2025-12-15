@@ -23,18 +23,84 @@
     </header>
 
     <main class="main-content">
-        <aside class="sidebar">
-            <h3>Navegação BIM / ACC</h3>
-            <div id="dataTree">
-                <p style="color: var(--color-text-dark); font-size: 0.9em;">Faça Login para carregar a hierarquia de dados.</p>
+        <aside id="filterSidebar" class="sidebar">
+            <h3>Filtros de Material</h3>
+
+            <div id="materialFilters">
+                <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
+
+                <h3>Visualização BIM / ACC</h3>
+                <div id="dataTree">
+                    <p style="color: var(--color-text-dark); font-size: 0.9em;">Faça Login para carregar a hierarquia de dados.</p>
+                </div>
             </div>
         </aside>
 
-        <div id="viewerContainer"></div>
+        <div id="centralPanel">
+
+
+            <!-- NOVA TABELA SIMPLES -->
+            <section id="airtableSimpleTable">
+                <h3> Tabela de Materiais (Airtable)</h3>
+
+                <table id="simpleMaterialsTable" class="simple-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Categoria</th>
+                        </tr>
+                    </thead>
+                    <tbody id="simpleMaterialsTableBody">
+                        <tr><td colspan="4">A carregar dados...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+            <!-- FIM DA NOVA TABELA -->
+
+
+            <div id="viewerContainer"></div>
+        </div>
     </main>
 
     <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
 
     <script src="/js/viewer.js"></script>
+
+    <!-- SCRIPT PARA A TABELA SIMPLES -->
+    <script>
+            async function loadSimpleTable() {
+                try {
+                    const res = await fetch("/api/materiais");
+                    const json = await res.json();
+
+                    // Aceita tanto [{...}] como { ok:true, data:[...] }
+                    let data = Array.isArray(json) ? json : json.data;
+
+                    // Mapeia os campos da Airtable para nomes consistentes
+                    data = data.map(m => ({
+                        name: m["Nome do Material"],
+                        category: m["Categoria"],
+
+                    }));
+
+                    const tbody = document.getElementById("simpleMaterialsTableBody");
+                    tbody.innerHTML = "";
+
+                    data.forEach(mat => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${mat.name}</td>
+                            <td>${mat.category}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                } catch (err) {
+                    console.error("Erro ao carregar tabela simples:", err);
+                }
+            }
+
+        loadSimpleTable();
+    </script>
 </body>
 </html>

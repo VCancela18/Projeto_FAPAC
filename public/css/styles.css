@@ -1,11 +1,11 @@
-/* public/styles.css */
+/* public/css/styles.css */
 
 /* --- Variáveis e Reset Básico --- */
 :root {
     --color-primary: #0078d4;
     --color-secondary: #00bfff;
     --color-background: #1e1e1e; /* Fundo Escuro Principal */
-    --color-surface: #252526;    /* Cor para Header/Sidebar (deve ser clara o suficiente) */
+    --color-surface: #252526;    /* Cor para Header/Sidebar */
     --color-text-light: #ffffff;
     --color-text-dark: #cccccc;
     --font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -51,7 +51,7 @@ body {
 /* --- Content Principal (Sidebar + Viewer) --- */
 .main-content {
     display: flex;
-    flex: 1;
+    flex: 1; /* Ocupa todo o espaço vertical restante */
 }
 
 .sidebar {
@@ -60,10 +60,10 @@ body {
     padding: 15px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
     overflow-y: auto;
-    flex-shrink: 0; /* Impede que o viewer a comprima */
+    flex-shrink: 0;
 }
 
-/* Contêiner do Viewer */
+/* Contêiner do Viewer (Ocupa o restante do espaço horizontal) */
 #viewerContainer {
     position: relative;
     flex: 1;
@@ -118,7 +118,7 @@ button:disabled {
     border-color: #008000;
 }
 
-/* --- Estilos da Árvore de Navegação (Sidebar) --- */
+/* --- Estilos de Filtros na Sidebar --- */
 .sidebar h3 {
     color: var(--color-secondary);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -126,52 +126,83 @@ button:disabled {
     margin-top: 0;
 }
 
+.sidebar h4 {
+    color: var(--color-text-light);
+    font-size: 1em;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.filter-group {
+    margin-bottom: 15px;
+}
+
+.filter-option {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+.filter-option label {
+    margin-left: 5px;
+    cursor: pointer;
+    color: var(--color-text-light);
+}
+
+/* Checkboxes */
+.filter-option input[type="checkbox"] {
+    accent-color: var(--color-primary);
+    background-color: #444;
+    border: 1px solid #555;
+}
+
+/* Dropdown (Select) */
+.dropdown-filter {
+    width: 100%;
+    padding: 8px;
+    background-color: #333;
+    color: var(--color-text-light);
+    border: 1px solid #444;
+    border-radius: 4px;
+}
+
+/* --- Estilos da Árvore de Navegação (BIM/ACC) --- */
 #dataTree {
     margin-top: 15px;
 }
 
-.node-item {
-    padding: 8px 10px;
-    margin-bottom: 2px;
-    cursor: pointer;
-    background-color: var(--color-surface);
-    color: var(--color-text-dark);
-    border-radius: 3px;
-    font-size: 0.95em;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.node-item:hover {
-    background-color: #38383a;
-    color: var(--color-text-light);
-}
-
-.node-icon {
-    margin-right: 8px;
-    font-size: 1.1em;
-}
-
-.loading-message, .error-message {
-    padding: 10px;
-    font-style: italic;
-    font-size: 0.9em;
-    color: #999;
-}
-
-.error-message {
-    color: #ff5555;
-    background-color: #3e2020;
-    border-left: 3px solid #ff0000;
-}
-
-.back-button {
+#materialsTableWrapper {
     width: 100%;
-    margin-bottom: 10px;
-    background-color: #444;
+    padding: 20px;
 }
 
-.back-button:hover {
-    background-color: #555;
+#simpleMaterialsTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
 }
+
+#simpleMaterialsTable th,
+#simpleMaterialsTable td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.95rem;
+}
+
+/* Coluna "Nome" ocupa muito mais espaço */
+#simpleMaterialsTable th:nth-child(1),
+#simpleMaterialsTable td:nth-child(1) {
+    width: 65%;
+}
+
+/* Categoria ocupa o resto */
+#simpleMaterialsTable th:nth-child(2),
+#simpleMaterialsTable td:nth-child(2) {
+    width: 35%;
+}
+
+#simpleMaterialsTable tr:hover {
+    background-color: rgba(255,255,255,0.05);
+}
+
+
