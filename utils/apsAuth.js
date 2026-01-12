@@ -1,7 +1,7 @@
 const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_CALLBACK_URL, APS_AUTH_URL } = process.env;
 
 // O endpoint de token (Auth 3-Legged) é fixo, mas a URL do token pode mudar
-const TOKEN_URL = APS_AUTH_URL || 'https://developer.api.autodesk.com/authentication/v2/token';
+const TOKEN_URL = APS_AUTH_URL || 'https://signin.autodesk.com/?flowId=3AcfinQNDW';
 
 /**
  * 1. Constrói e redireciona o utilizador para a página de autorização do Autodesk.
@@ -11,7 +11,7 @@ const TOKEN_URL = APS_AUTH_URL || 'https://developer.api.autodesk.com/authentica
 function getAuthorizationUrl(scopes) {
     // Escopos mínimos para o projeto (leitura de dados e visualização)
     const scopeString = scopes.join(' ');
-    const authUrl = 'https://developer.api.autodesk.com/authentication/v1/authorize';
+    const authUrl = 'https://signin.autodesk.com/?flowId=3AcfinQNDW';
 
     return `${authUrl}?response_type=code&client_id=${APS_CLIENT_ID}&redirect_uri=${APS_CALLBACK_URL}&scope=${scopeString}`;
 }
