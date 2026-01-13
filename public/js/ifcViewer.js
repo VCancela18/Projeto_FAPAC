@@ -11,14 +11,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       import('https://unpkg.com/three@latest/build/three.module.js')
     ].map(p => p.catch(e => { console.error(e); return undefined; })));
 
+    console.log('web-ifc imports:', { IfcViewerAPI, THREE });
+
     if (!IfcViewerAPI) {
-      statusEl.textContent = 'Erro ao carregar o módulo web-ifc-viewer.';
+      const msg = 'Erro ao carregar o módulo web-ifc-viewer.';
+      console.error(msg);
+      statusEl.textContent = msg;
       return;
     }
 
     const container = document.getElementById('viewer');
     if (!container) {
-      statusEl.textContent = 'Container do viewer não encontrado.';
+      const msg = 'Container do viewer não encontrado.';
+      console.error(msg);
+      statusEl.textContent = msg;
       return;
     }
 
@@ -28,17 +34,52 @@ document.addEventListener('DOMContentLoaded', async () => {
       container.style.height = '100vh';
     }
 
-    viewer = new IfcViewerAPI({ container, backgroundColor: new THREE.Color(0xffffff) });
-
-    // Ensure WASM is served from /wasm/ and configured
-    if (viewer.IFC && typeof viewer.IFC.setWasmPath === 'function') {
-      viewer.IFC.setWasmPath('/wasm/');
-    } else if (viewer.IFC && viewer.IFC.loader && viewer.IFC.loader.ifcManager && typeof viewer.IFC.loader.ifcManager.setWasmPath === 'function') {
-      viewer.IFC.loader.ifcManager.setWasmPath('/wasm/');
+    try {
+      viewer = new IfcViewerAPI({ container, backgroundColor: new THREE.Color(0xffffff) });
+      // expose for debugging
+      window.debugIfcViewer = viewer;
+      console.log('IfcViewerAPI instance created:', viewer);
+    } catch (instErr) {
+      console.error('Erro ao criar instância do viewer:', instErr);
+      statusEl.textContent = 'Erro ao iniciar o viewer (instanciação falhou). Veja consola.';
+      return;
     }
 
-    viewer.grid.setGrid();
-    viewer.axes.setAxes();
+    // Ensure WASM is served from /wasm/ and configured
+    try {
+      if (viewer.IFC && typeof viewer.IFC.setWasmPath === 'function') {
+        viewer.IFC.setWasmPath('/wasm/');
+      } else if (viewer.IFC && viewer.IFC.loader && viewer.IFC.loader.ifcManager && typeof viewer.IFC.loader.ifcManager.setWasmPath === 'function') {
+        viewer.IFC.loader.ifcManager.setWasmPath('/wasm/');
+      }
+
+      // quick check to ensure WASM is reachable
+      try {
+        const wasmUrl = '/wasm/web-ifc.wasm';
+        const head = await fetch(wasmUrl, { method: 'HEAD' });
+        if (!head.ok) {
+          console.warn('WASM não acessível via', wasmUrl, 'status', head.status);
+          statusEl.textContent = 'Viewer inicializado, mas a WASM não está acessível (ver consola).';
+        } else {
+          console.log('WASM disponível em', wasmUrl);
+        }
+      } catch (e) {
+        console.warn('Erro ao verificar WASM:', e);
+        statusEl.textContent = 'Viewer inicializado; verifique WASM em /wasm/ se algo falhar.';
+      }
+
+    } catch (wasmErr) {
+      console.error('Erro ao configurar WASM:', wasmErr);
+      statusEl.textContent = 'Erro ao configurar WASM do viewer.';
+      return;
+    }
+
+    try {
+      if (viewer.grid && typeof viewer.grid.setGrid === 'function') viewer.grid.setGrid();
+      if (viewer.axes && typeof viewer.axes.setAxes === 'function') viewer.axes.setAxes();
+    } catch (gridErr) {
+      console.warn('Erro ao definir grid/axes:', gridErr);
+    }
 
     // Resize handler
     window.addEventListener('resize', () => viewer.context.renderer.resize());
@@ -148,8 +189,9 @@ uploadForm.addEventListener('submit', async (e) => {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Upload failed');
 
-    statusEl.textContent = 'Ficheiro carregado. A desenhar o modelo...';
     const url = data.url;
+    statusEl.textContent = `Ficheiro carregado: ${url}. A desenhar o modelo...`;
+    console.log('Upload returned URL:', url);
 
     if (!viewer) {
       statusEl.textContent = 'Viewer não inicializado corretamente.';
@@ -163,7 +205,19 @@ uploadForm.addEventListener('submit', async (e) => {
       viewer.IFC.loader.ifcManager.setWasmPath('/wasm/');
     }
 
-    await viewer.loadIfcUrl(url);
+    // Use absolute URL to avoid path issues
+    const fullUrl = new URL(url, window.location.origin).href;
+
+    // Quick HEAD check to verify the uploaded file is accessible
+    const head = await fetch(fullUrl, { method: 'HEAD' });
+    if (!head.ok) throw new Error('Uploaded file not accessible (status ' + head.status + ')');
+
+    try {
+      await viewer.loadIfcUrl(fullUrl);
+    } catch (loadErr) {
+      console.error('Erro ao desenhar o modelo:', loadErr);
+      throw loadErr;
+    }
 
     statusEl.textContent = 'Modelo carregado.';
   } catch (err) {

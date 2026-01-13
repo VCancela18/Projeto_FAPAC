@@ -19,6 +19,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Serve web-ifc WASM directly from node_modules to make it available at /wasm/web-ifc.wasm
 app.use('/wasm', express.static(path.join(__dirname, 'node_modules', 'web-ifc')));
 
+// Ensure public/wasm/web-ifc.wasm exists by copying from node_modules if available
+const fs = require('fs');
+const srcWasm = path.join(__dirname, 'node_modules', 'web-ifc', 'web-ifc.wasm');
+const destDir = path.join(__dirname, 'public', 'wasm');
+const destWasm = path.join(destDir, 'web-ifc.wasm');
+try {
+    if (fs.existsSync(srcWasm)) {
+        if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+        if (!fs.existsSync(destWasm)) {
+            fs.copyFileSync(srcWasm, destWasm);
+            console.log('Web-IFC WASM copiado para public/wasm/web-ifc.wasm');
+        } else {
+            console.log('public/wasm/web-ifc.wasm já existe');
+        }
+    } else {
+        console.warn('web-ifc.wasm não encontrado em node_modules/web-ifc. Executa `npm install` para obter o ficheiro WASM.');
+    }
+} catch (e) {
+    console.warn('Erro ao tentar copiar web-ifc.wasm:', e);
+}
 // Middleware para processar payloads JSON
 app.use(express.json());
 
@@ -30,7 +50,7 @@ app.use(logger);
 
 // Rotas do seu app.js original
 app.get('/', (req, res) => {
-    // Redireciona para o index.html na pasta public
+    // Serve o index original da aplicação (na pasta public/html)
     res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
 });
 
