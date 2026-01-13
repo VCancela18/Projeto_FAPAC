@@ -28,6 +28,11 @@
             <h3>Filtros de Material</h3>
 
             <div id="materialFilters">
+                <div class="filter-buttons" id="filterButtonsContainer">
+                    <!-- Os botões serão gerados dinamicamente a partir das categorias retornadas pela API -->
+                    <button class="filter-btn active" data-category="All">Todos</button>
+                </div>
+
                 <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
 
                 <h3>Visualização BIM / ACC</h3>
@@ -69,39 +74,100 @@
 
     <!-- SCRIPT PARA A TABELA SIMPLES -->
     <script>
-            async function loadSimpleTable() {
-                try {
-                    const res = await fetch("/api/materiais");
-                    const json = await res.json();
+    (function () {
+        // In-memory store for materials
+        let simpleMaterialsData = [];
 
-                    // Aceita tanto [{...}] como { ok:true, data:[...] }
-                    let data = Array.isArray(json) ? json : json.data;
+        async function loadSimpleTable() {
+            try {
+                const res = await fetch('/api/materiais');
+                const json = await res.json();
 
-                    // Mapeia os campos da Airtable para nomes consistentes
-                    data = data.map(m => ({
-                        name: m["Nome do Material"],
-                        category: m["Categoria"],
+                // Aceita tanto [{...}] como { ok:true, data:[...] }
+                let data = Array.isArray(json) ? json : json.data;
 
-                    }));
+                // Mapeia os campos da Airtable para nomes consistentes
+                data = data.map(m => ({
+                    name: m['Nome do Material'] || m.name || '',
+                    category: m['Categoria'] || m.category || ''
+                }));
 
-                    const tbody = document.getElementById("simpleMaterialsTableBody");
-                    tbody.innerHTML = "";
+                simpleMaterialsData = data;
 
-                    data.forEach(mat => {
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td>${mat.name}</td>
-                            <td>${mat.category}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
+                // Render initial table and filter buttons
+                renderSimpleTable('All');
+                renderFilterButtons();
 
-                } catch (err) {
-                    console.error("Erro ao carregar tabela simples:", err);
-                }
+            } catch (err) {
+                console.error('Erro ao carregar tabela simples:', err);
+            }
+        }
+
+        function renderSimpleTable(filterCategory = 'All') {
+            const tbody = document.getElementById('simpleMaterialsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const filtered = simpleMaterialsData.filter(mat => {
+                if (!filterCategory || filterCategory === 'All') return true;
+                return (mat.category || '').toLowerCase() === filterCategory.toLowerCase();
+            });
+
+            if (filtered.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="2">Nenhum material encontrado.</td>`;
+                tbody.appendChild(tr);
+                return;
             }
 
+            filtered.forEach(mat => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${mat.name}</td>
+                    <td class="mat-category">${mat.category}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderFilterButtons() {
+            const container = document.getElementById('filterButtonsContainer');
+            if (!container) return;
+
+            // Obter categorias únicas (ignorando vazias)
+            const categories = Array.from(new Set(simpleMaterialsData.map(m => (m.category || '').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b, 'pt', { sensitivity: 'base' }));
+
+            container.innerHTML = '';
+
+            // Botão 'Todos' com contagem
+            const total = simpleMaterialsData.length;
+            const allBtn = document.createElement('button');
+            allBtn.className = 'filter-btn active';
+            allBtn.dataset.category = 'All';
+            allBtn.innerHTML = `Todos <span class="count">(${total})</span>`;
+            allBtn.addEventListener('click', () => { setActiveButton(allBtn); renderSimpleTable('All'); });
+            container.appendChild(allBtn);
+
+            categories.forEach(cat => {
+                const count = simpleMaterialsData.filter(m => (m.category || '').trim().toLowerCase() === cat.toLowerCase()).length;
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.category = cat;
+                btn.innerHTML = `${cat} <span class="count">(${count})</span>`;
+                btn.addEventListener('click', () => { setActiveButton(btn); renderSimpleTable(cat); });
+                container.appendChild(btn);
+            });
+        }
+
+        function setActiveButton(activeBtn) {
+            const container = document.getElementById('filterButtonsContainer');
+            if (!container) return;
+            Array.from(container.querySelectorAll('.filter-btn')).forEach(b => b.classList.toggle('active', b === activeBtn));
+        }
+
+        // Inicializa
         loadSimpleTable();
+    })();
     </script>
 </body>
 </html>

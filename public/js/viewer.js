@@ -13,7 +13,20 @@ const dataTree = document.getElementById('dataTree');
 const productsTableBody = document.getElementById('productsTableBody') || document.createElement('tbody');
 const materialCountSpan = document.getElementById('materialCount') || document.createElement('span');
 const materialFiltersContainer = document.getElementById('materialFilters');
-let applyFiltersButton;
+let viewerFiltersArea = document.getElementById('viewerFiltersArea');
+// If the viewer-specific filters area doesn't exist, create it and place it after the buttons container
+if (!viewerFiltersArea) {
+    viewerFiltersArea = document.createElement('div');
+    viewerFiltersArea.id = 'viewerFiltersArea';
+    const btnContainer = document.getElementById('filterButtonsContainer');
+    if (btnContainer && btnContainer.parentNode) {
+        btnContainer.parentNode.insertBefore(viewerFiltersArea, btnContainer.nextSibling);
+    } else if (materialFiltersContainer) {
+        materialFiltersContainer.appendChild(viewerFiltersArea);
+    }
+}
+
+let applyFiltersButton; 
 
 
 // --- 1. AUTENTICAÇÃO APS ---
@@ -95,25 +108,16 @@ async function loadMaterials() {
         const materials = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : data.records);
 
         if (!materials || materials.length === 0) {
-            materialFiltersContainer.innerHTML = "<p>Sem materiais disponíveis.</p>";
+            viewerFiltersArea.innerHTML = "<p>Sem materiais disponíveis.</p>";
             return;
         }
 
         // Gerar lista de categorias únicas (usando nomes de campos da sua Airtable)
         const categories = [...new Set(materials.map(m => m["Categoria"]))];
 
-        materialFiltersContainer.innerHTML = ""; // Limpa a secção de filtros
-
-        categories.forEach(cat => {
-            if (!cat) return;
-
-            const item = document.createElement("div");
-            item.classList.add("filter-item");
-            item.textContent = cat;
-            item.onclick = () => filterByCategory(cat);
-
-            materialFiltersContainer.appendChild(item);
-        });
+        // Mantemos o viewerFiltersArea limpo para que apenas os filtros estruturados sejam adicionados
+        viewerFiltersArea.innerHTML = ""; // Limpa a secção de filtros do viewer
+        // Não adicionamos uma lista simples de categorias aqui para evitar duplicação com os botões do sidebar.
 
         console.log("Categorias encontradas:", categories);
 
@@ -187,30 +191,30 @@ function renderFilters(materials) {
     console.log("MATERIALS RECEBIDOS NO FILTRO:", materials);
 
     if (!materials || materials.length === 0) {
-    materialFiltersContainer.innerHTML = "<p>Sem materiais disponíveis.</p>";
+    viewerFiltersArea.innerHTML = "<p>Sem materiais disponíveis.</p>";
     return;
     }
 
     const uniqueCategories = [...new Set(materials.map(m => m.category).filter(Boolean))];
     const uniqueSuppliers  = [...new Set(materials.map(m => m.supplier).filter(Boolean))];
 
-    materialFiltersContainer.innerHTML = '';
+    viewerFiltersArea.innerHTML = '';
 
     if (uniqueCategories.length > 0) {
         const catGroup = createFilterGroup('Categoria', uniqueCategories, 'category');
-        materialFiltersContainer.appendChild(catGroup);
+        viewerFiltersArea.appendChild(catGroup);
     }
 
     if (uniqueSuppliers.length > 0) {
         const supGroup = createDropdownFilterGroup('Fornecedor', uniqueSuppliers, 'supplier');
-        materialFiltersContainer.appendChild(supGroup);
+        viewerFiltersArea.appendChild(supGroup);
     }
 
     const applyButtonDiv = document.createElement('div');
     applyButtonDiv.className = 'filter-group';
     applyButtonDiv.innerHTML = `<button id="applyFiltersButton">Aplicar Filtros</button>`;
 
-    materialFiltersContainer.appendChild(applyButtonDiv);
+    viewerFiltersArea.appendChild(applyButtonDiv);
 
     applyFiltersButton = document.getElementById('applyFiltersButton');
     applyFiltersButton.addEventListener('click', applyFilters);

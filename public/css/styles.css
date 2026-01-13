@@ -170,6 +170,20 @@ button:disabled {
     margin-top: 15px;
 }
 
+/* Area used by viewer scripts to add additional filters (keeps sidebar buttons intact) */
+#viewerFiltersArea {
+    margin-top: 12px;
+}
+
+#viewerFiltersArea .filter-item {
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+#viewerFiltersArea .filter-item:hover { background: rgba(255,255,255,0.02); }
+
 #materialsTableWrapper {
     width: 100%;
     padding: 20px;
@@ -204,5 +218,32 @@ button:disabled {
 #simpleMaterialsTable tr:hover {
     background-color: rgba(255,255,255,0.05);
 }
+
+/* Filter buttons in the sidebar */
+.filter-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.filter-btn {
+    background: transparent;
+    color: var(--color-text-light);
+    border: 1px solid rgba(255,255,255,0.03);
+    padding: 8px 10px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: background-color 0.15s, transform 0.05s;
+}
+
+.filter-btn:hover { background-color: rgba(255,255,255,0.03); }
+.filter-btn.active { background-color: rgba(255,255,255,0.06); font-weight: 700; }
+
+/* Count bubble on filter buttons */
+.filter-btn .count { float: right; color: var(--color-text-dark); font-size: 0.85rem; font-weight: 600; }
+
 
 
