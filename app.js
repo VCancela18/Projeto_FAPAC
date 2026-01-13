@@ -7,6 +7,7 @@ const app = express();
 // --- Importar Módulos ---
 const forgeRoutes = require('./src/routes/forgeRoutes');
 const materiaisRoutes = require('./src/routes/materiaisRoutes');
+const ifcRoutes = require('./src/routes/ifcRoutes');
 const errorHandler = require('./src/middleware/errorHandler'); // Importa o middleware de tratamento de erros
 const logger = require('./src/middleware/logger');
 const path = require('path');// Importa o middleware de log/tempo de resposta
@@ -14,6 +15,9 @@ const path = require('path');// Importa o middleware de log/tempo de resposta
 // --- Middlewares Gerais ---
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve web-ifc WASM directly from node_modules to make it available at /wasm/web-ifc.wasm
+app.use('/wasm', express.static(path.join(__dirname, 'node_modules', 'web-ifc')));
 
 // Middleware para processar payloads JSON
 app.use(express.json());
@@ -76,7 +80,8 @@ app.use(forgeRoutes); // Todas as rotas do APS (incluindo Auth) vão para forgeR
 
 // Monta as rotas dos Materiais do Airtable
 app.use('/api/materiais', materiaisRoutes);
-
+// Monta as rotas do IFC Viewer (upload + viewer page)
+app.use(ifcRoutes);
 // --- Global Error Middleware ---
 
 // Garante que captura erros de todas as rotas e middlewares anteriores

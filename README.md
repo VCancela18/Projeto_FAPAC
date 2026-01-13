@@ -152,6 +152,36 @@ All errors are caught by the global error middleware and returned in a consisten
 }
 ```
 
+## IFC Viewer (upload + preview)
+
+This project includes a simple IFC viewer that allows uploading a `.ifc` file from your browser and visualizing it.
+
+- Install the new dependencies:
+
+```bash
+npm install web-ifc-viewer three multer
+```
+
+- Start the server:
+
+```bash
+node server.js
+```
+
+- Open the viewer page in your browser:
+
+```
+http://localhost:3000/ifc-viewer
+```
+
+- Use the form to select a `.ifc` file and click **Upload e Visualizar**. The file is saved to `public/uploads` and returned as a URL for the viewer to load.
+
+Notes:
+- Only `.ifc` files are accepted and uploads are limited to ~200MB by default.
+- Upload endpoint: `POST /api/ifc/upload` (field name: `ifcFile`).
+
+---
+
 ## License
 
 ISC
