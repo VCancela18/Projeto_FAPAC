@@ -1,6 +1,6 @@
 // Minimal viewer script — uses CDN ESM for reliability
-import { IFCViewerAPI } from 'https://unpkg.com/web-ifc-viewer@latest/dist/web-ifc-viewer.esm.js';
-import * as THREE from 'https://unpkg.com/three@0.135.0/build/three.module.js';
+import { IFCViewerAPI } from '/modules/web-ifc-viewer/dist/web-ifc-viewer.esm.js';
+import * as THREE from '/modules/three/build/three.module.js';
 
 const container = document.getElementById('viewer-container');
 const statusEl = document.getElementById('status');

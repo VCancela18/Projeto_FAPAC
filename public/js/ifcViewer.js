@@ -1,3 +1,4 @@
+console.log('ifcViewer.js carregado');
 const statusEl = document.getElementById('status');
 const uploadForm = document.getElementById('uploadForm');
 
@@ -7,8 +8,8 @@ let viewer;
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const [{ IfcViewerAPI }, THREE] = await Promise.all([
-      import('https://unpkg.com/web-ifc-viewer@latest/dist/web-ifc-viewer.esm.js'),
-      import('https://unpkg.com/three@latest/build/three.module.js')
+      import('/modules/web-ifc-viewer/dist/web-ifc-viewer.esm.js'),
+      import('/modules/three/build/three.module.js')
     ].map(p => p.catch(e => { console.error(e); return undefined; })));
 
     console.log('web-ifc imports:', { IfcViewerAPI, THREE });
@@ -20,9 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const container = document.getElementById('viewer');
+    const container = document.getElementById('viewer-container') || document.getElementById('viewer');
     if (!container) {
-      const msg = 'Container do viewer não encontrado.';
+      const msg = 'Container do viewer não encontrado (procure #viewer-container ou #viewer).';
       console.error(msg);
       statusEl.textContent = msg;
       return;
@@ -30,8 +31,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Ensure container has visible size
     if (container.clientWidth === 0 || container.clientHeight === 0) {
+      // give it a sensible size if missing
       container.style.width = '100vw';
-      container.style.height = '100vh';
+      container.style.height = '80vh';
     }
 
     try {
@@ -84,11 +86,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Resize handler
     window.addEventListener('resize', () => viewer.context.renderer.resize());
 
+    // Wire local file input to allow loading without upload
+    const localInput = document.getElementById('ifc-input') || document.getElementById('ifcFile');
+    if (localInput) {
+      localInput.addEventListener('change', async (evt) => {
+        const file = evt.target.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        statusEl.textContent = 'A carregar ficheiro local...';
+        try {
+          await viewer.loadIfcUrl(url);
+          statusEl.textContent = 'IFC carregado a partir do ficheiro local.';
+          console.log('IFC carregado a partir do ficheiro local');
+        } catch (err) {
+          console.error('Erro ao carregar IFC local:', err);
+          statusEl.textContent = 'Erro ao carregar IFC local: ' + (err.message || err);
+        }
+      });
+    } else {
+      console.warn('input file não encontrado (ifc-input ou ifcFile)');
+    }
+
     // Elements for properties / materials panel
     const propsPanel = document.getElementById('propsPanel');
     const propsContent = document.getElementById('propsContent');
     const closeProps = document.getElementById('closeProps');
-    closeProps.addEventListener('click', () => { propsPanel.style.display = 'none'; });
+    if (closeProps) closeProps.addEventListener('click', () => { propsPanel.style.display = 'none'; });
 
     // Click handler: pick element, get properties and show material info
     container.addEventListener('click', async (event) => {
@@ -176,8 +199,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const input = document.getElementById('ifcFile');
-  if (!input.files || input.files.length === 0) return;
+  const input = document.getElementById('ifcFile') || document.getElementById('ifc-input');
+  if (!input || !input.files || input.files.length === 0) return;
 
   const form = new FormData();
   form.append('ifcFile', input.files[0]);

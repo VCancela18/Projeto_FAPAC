@@ -21,15 +21,15 @@
 <body>
   <div class="toolbar">
     <form id="uploadForm">
-      <label for="ifcFile">Selecionar ficheiro .ifc:</label>
-      <input id="ifcFile" name="ifcFile" type="file" accept=".ifc" required />
+      <label for="ifc-input">Selecionar ficheiro .ifc:</label>
+      <input id="ifc-input" name="ifcFile" type="file" accept=".ifc" required />
       <button type="submit">Upload e Visualizar</button>
     </form>
     <span id="status"></span>
   </div>
 
   <div id="appContainer">
-    <div id="viewer"></div>
+    <div id="viewer-container" style="width:100vw; height:80vh;"></div>
     <aside id="propsPanel" style="display:none;">
       <h3>Propriedades & Materiais</h3>
       <div id="propsContent"><em>Clique num elemento para ver propriedades e materiais.</em></div>

@@ -19,6 +19,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Serve web-ifc WASM directly from node_modules to make it available at /wasm/web-ifc.wasm
 app.use('/wasm', express.static(path.join(__dirname, 'node_modules', 'web-ifc')));
 
+// Also serve node_modules under /modules so frontend can import local ESM modules (avoids CORS issues)
+app.use('/modules', express.static(path.join(__dirname, 'node_modules')));
+
 // Ensure public/wasm/web-ifc.wasm exists by copying from node_modules if available
 const fs = require('fs');
 const srcWasm = path.join(__dirname, 'node_modules', 'web-ifc', 'web-ifc.wasm');
