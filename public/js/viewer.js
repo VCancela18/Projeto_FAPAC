@@ -29,11 +29,11 @@ async function initApp() {
     await checkAuthStatus();
 }
 
-// Listener do Botão de Login Real
+// Listener do Botão de Login Real (Redireciona para a Autodesk)
 if (btnLoginBig) btnLoginBig.onclick = () => window.location.href = '/api/auth/login';
 if (btnLoginHeader) btnLoginHeader.onclick = () => window.location.href = '/api/auth/login';
 
-// Listener do Botão de MODO DEMO (Bypass)
+// Listener do Botão de MODO DEMO (Ignora Autodesk)
 if (btnBypass) {
     btnBypass.onclick = () => {
         console.log("🚀 A entrar em Modo Demo...");
@@ -62,7 +62,7 @@ async function checkAuthStatus() {
         if (response.ok) {
             const data = await response.json();
             if (data.access_token) {
-                // SUCESSO: Temos token!
+                // SUCESSO: Temos token válido! (Isto vai acontecer no PC do teu colega)
                 accessToken = data.access_token;
                 onUserAuthenticated();
                 return;
@@ -71,7 +71,7 @@ async function checkAuthStatus() {
     } catch (error) {
         console.error("Erro auth:", error);
     }
-    // Se falhar a autenticação automática, mostramos o login
+    // Se falhar a autenticação automática, mostramos o ecrã de login
     onUserNotAuthenticated();
 }
 
@@ -86,6 +86,7 @@ function onUserAuthenticated() {
 
     // Ativar botões
     btnLoadModel.disabled = false;
+    urnInput.disabled = false;
 
     // Inicializar Viewer
     initializeViewerEnvironment();
@@ -105,22 +106,28 @@ async function fetchMaterials() {
         const res = await fetch('/api/materiais');
         const json = await res.json();
 
-        const rawData = Array.isArray(json) ? json : (json.data || []);
+        // Airtable devolve os dados às vezes dentro de 'records' ou direto, depende do controller
+        // Assumimos que o teu controller devolve { data: [...] } ou [...]
+        const rawData = Array.isArray(json) ? json : (json.data || json.records || []);
 
-        allMaterials = rawData.map(r => ({
-            id: r.id,
-            name: r['Nome do Material'] || r.name || 'Sem Nome',
-            category: r['Categoria'] || 'Geral',
-            supplier: r['Fornecedor'] || 'Desconhecido',
-            photo: r.photoUrl || null
-        }));
+        allMaterials = rawData.map(r => {
+            // Se o controller passar o objeto do airtable direto (fields)
+            const f = r.fields || r;
+            return {
+                id: r.id,
+                name: f['Nome do Material'] || f.name || 'Sem Nome',
+                category: f['Categoria'] || 'Geral',
+                supplier: f['Fornecedor'] || 'Desconhecido',
+                photo: f.photoUrl || null // Ajustar conforme o teu campo de imagem
+            };
+        });
 
         renderMaterialsTable(allMaterials);
         console.log(`📦 ${allMaterials.length} materiais carregados da Airtable.`);
 
     } catch (err) {
         console.error("Erro ao carregar materiais:", err);
-        document.querySelector('#materialsTableBody').innerHTML = '<tr><td colspan="4">Erro de conexão à Airtable (Verifique o .env).</td></tr>';
+        document.querySelector('#materialsTableBody').innerHTML = '<tr><td colspan="4">Erro de conexão à Airtable.</td></tr>';
     }
 }
 
@@ -135,6 +142,7 @@ function renderMaterialsTable(materials) {
 
     materials.forEach(mat => {
         const tr = document.createElement('tr');
+        // Se houver imagem, mostra, senão põe um ícone
         const imgHtml = mat.photo ? `<img src="${mat.photo}" style="height:30px;border-radius:4px;">` : '📄';
 
         tr.innerHTML = `
@@ -148,7 +156,7 @@ function renderMaterialsTable(materials) {
 }
 
 
-// --- 3. AUTODESK VIEWER ---
+// --- 3. AUTODESK VIEWER (SÓ FUNCIONA COM TOKEN) ---
 
 function initializeViewerEnvironment() {
     const options = {
@@ -184,12 +192,12 @@ function loadModel(documentId) {
         });
     }, (errorCode) => {
         console.error("Erro load:", errorCode);
-        alert("Erro ao carregar. Token expirado ou URN inválido.");
+        alert("Erro ao carregar modelo. Token pode ter expirado ou URN inválido.");
     });
 }
 
 
-// --- 4. LÓGICA DE AUDITORIA ---
+// --- 4. LÓGICA DE AUDITORIA (O CÉREBRO) ---
 
 btnAudit.onclick = () => {
     if (!viewer) return;
@@ -210,9 +218,11 @@ function auditModel() {
     let foundCount = 0;
     let missingCount = 0;
 
-    const colorGreen = new THREE.Vector4(0, 1, 0, 0.5);
-    const colorRed = new THREE.Vector4(1, 0, 0, 0.5);
+    // Cores para pintar o modelo
+    const colorGreen = new THREE.Vector4(0, 1, 0, 0.5); // Validado
+    const colorRed = new THREE.Vector4(1, 0, 0, 0.5);   // Desconhecido
 
+    // 1. Obter todos os objetos físicos (folhas da árvore)
     const leafIds = [];
     tree.enumNodeChildren(tree.getRootId(), (dbId) => {
         if (tree.getChildCount(dbId) === 0) {
@@ -220,6 +230,8 @@ function auditModel() {
         }
     }, true);
 
+    // 2. Obter propriedades em massa
+    // Procuramos por propriedades que contenham "Material"
     model.getBulkProperties(leafIds, ['Material', 'Structural Material'], (results) => {
         viewer.clearThemingColors();
 
@@ -227,11 +239,13 @@ function auditModel() {
             const dbId = item.dbId;
             let materialName = null;
 
+            // Tentar encontrar o valor do material
             const matProp = item.properties.find(p => p.displayName.includes("Material"));
-
             if (matProp) materialName = matProp.displayValue;
 
             if (materialName) {
+                // 3. Comparar com a lista da Airtable (allMaterials)
+                // Usamos toLowerCase() e trim() para ignorar diferenças pequenas
                 const match = allMaterials.find(m => m.name.toLowerCase().trim() === materialName.toLowerCase().trim());
 
                 if (match) {
@@ -242,20 +256,22 @@ function auditModel() {
                     missingCount++;
                 }
             } else {
+                // Se não tem material definido, marca como erro
                 viewer.setThemingColor(dbId, colorRed);
                 missingCount++;
             }
         });
 
+        // 4. Mostrar Resultados
         auditLegend.classList.remove('hidden');
         auditStats.innerHTML = `
             Elementos Certificados: <strong>${foundCount}</strong><br>
             Elementos Desconhecidos: <strong>${missingCount}</strong>
         `;
 
-        alert(`Auditoria Finalizada!`);
+        alert(`Auditoria Finalizada!\n${foundCount} materiais validados.\n${missingCount} materiais desconhecidos.`);
     });
 }
 
-// Iniciar
+// Iniciar Aplicação
 initApp();

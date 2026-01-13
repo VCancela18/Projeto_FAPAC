@@ -1,107 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APS BIM Viewer - FAPC</title>
+    <title>AECO-DEV | Gestão de Materiais</title>
 
     <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css" type="text/css">
-
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <div class="login-logo">🏗️ AECO-DEV</div>
+            <h1>Gestão Integrada de Materiais</h1>
+            <p>Plataforma de auditoria BIM e controlo de especificações.</p>
+
+            <button id="btnLoginBig" class="btn-primary-large">
+                🔐 Entrar com Autodesk
+            </button>
+
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+                <p style="font-size: 0.9em; color: #777; margin-bottom: 10px;">Não tem licença Autodesk?</p>
+                <button id="btnBypass" class="btn-secondary" style="width: 100%; border: 1px dashed #999; color: #555;">
+                    🚀 Entrar em Modo Demo (Offline)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <header class="header-bar">
         <div class="logo">A E C O - D E V</div>
 
         <div class="input-group">
-            <button id="loginButton">1. Login (Autodesk)</button>
-            <input type="text" id="urnInput" placeholder="2. Insira o URN da Versão aqui">
-            <button id="loadModelButton" disabled>3. Carregar Modelo</button>
-            <a id="openIfcViewerBtn" href="/ifc-viewer" style="margin-left:8px;">4. Abrir IFC Viewer</a>
+            <button id="btnLoginHeader" class="btn-small" style="display:none;">Login</button>
+
+            <input type="text" id="urnInput" placeholder="Cole aqui o URN do Modelo...">
+            <button id="btnLoadModel" disabled>Carregar Modelo</button>
+
+            <a href="/ifc-viewer" class="btn-link">Ir para IFC Viewer</a>
         </div>
 
-        <span id="statusIndicator" class="status">Status: Não Autenticado</span>
+        <span id="statusIndicator" class="status">A verificar autenticação...</span>
     </header>
 
     <main class="main-content">
-        <aside id="filterSidebar" class="sidebar">
-            <h3>Filtros de Material</h3>
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3>🛠️ Auditoria BIM (Autodesk)</h3>
+                <p class="small-text">Cruze os dados do modelo com a Base de Dados.</p>
+                <button id="btnAudit" class="btn-action" disabled>🔍 Auditar Modelo</button>
+                <button id="btnClearColors" class="btn-secondary" disabled>Limpar Cores</button>
 
-            <div id="materialFilters">
-                <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
-
-                <h3>Visualização BIM / ACC</h3>
-                <div id="dataTree">
-                    <p style="color: var(--color-text-dark); font-size: 0.9em;">Faça Login para carregar a hierarquia de dados.</p>
+                <div id="auditLegend" class="legend-box hidden">
+                    <div class="legend-item"><span class="dot green"></span> Validado (Na BD)</div>
+                    <div class="legend-item"><span class="dot red"></span> Não Encontrado</div>
+                    <div id="auditStats" class="audit-stats"></div>
                 </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>📦 Materiais (Airtable)</h3>
+                <div id="materialFilters">
+                    </div>
             </div>
         </aside>
 
         <div id="centralPanel">
-
-
-            <!-- NOVA TABELA SIMPLES -->
-            <section id="airtableSimpleTable">
-                <h3> Tabela de Materiais (Airtable)</h3>
-
-                <table id="simpleMaterialsTable" class="simple-table">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Categoria</th>
-                        </tr>
-                    </thead>
-                    <tbody id="simpleMaterialsTableBody">
-                        <tr><td colspan="4">A carregar dados...</td></tr>
-                    </tbody>
-                </table>
-            </section>
-            <!-- FIM DA NOVA TABELA -->
-
-
             <div id="viewerContainer"></div>
+
+            <section id="materialsListSection">
+                <h3>Base de Dados de Materiais</h3>
+                <div class="table-container">
+                    <table id="materialsTable" class="simple-table">
+                        <thead>
+                            <tr>
+                                <th>Imagem</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th>Fornecedor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialsTableBody">
+                            <tr><td colspan="4">A carregar materiais...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
     </main>
 
     <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
-
     <script src="/js/viewer.js"></script>
-
-    <!-- SCRIPT PARA A TABELA SIMPLES -->
-    <script>
-            async function loadSimpleTable() {
-                try {
-                    const res = await fetch("/api/materiais");
-                    const json = await res.json();
-
-                    // Aceita tanto [{...}] como { ok:true, data:[...] }
-                    let data = Array.isArray(json) ? json : json.data;
-
-                    // Mapeia os campos da Airtable para nomes consistentes
-                    data = data.map(m => ({
-                        name: m["Nome do Material"],
-                        category: m["Categoria"],
-
-                    }));
-
-                    const tbody = document.getElementById("simpleMaterialsTableBody");
-                    tbody.innerHTML = "";
-
-                    data.forEach(mat => {
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td>${mat.name}</td>
-                            <td>${mat.category}</td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-
-                } catch (err) {
-                    console.error("Erro ao carregar tabela simples:", err);
-                }
-            }
-
-        loadSimpleTable();
-    </script>
 </body>
 </html>
