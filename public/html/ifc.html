@@ -1,42 +1,59 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IFC Viewer</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <style>
-    body { margin:0; font-family: Arial, Helvetica, sans-serif; }
-    .toolbar { padding: 10px; }
-    #appContainer { display:flex; height: calc(100vh - 60px); }
-    #viewer { flex:1; background: #eee; height:100%; }
-    #propsPanel { width:320px; background:#fff; border-left:1px solid #ccc; padding:12px; box-sizing:border-box; overflow:auto; }
-    #propsPanel h3 { margin-top:0; }
-    #propsContent { font-size:13px; }
-    .prop-row { padding:6px 0; border-bottom:1px solid #f0f0f0; }
-    .prop-key { font-weight:600; color:#333; }
-    .prop-value { color:#111; margin-left:8px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AECO-DEV | Leitor IFC</title>
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
+
+        #ifc-container {
+            position: absolute; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px);
+            background: linear-gradient(to bottom, #e0eafc, #cfdef3); outline: none;
+        }
+
+        .upload-box {
+            position: absolute; top: 80px; left: 20px;
+            background: white; padding: 20px;
+            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10; width: 300px;
+        }
+
+        #info-panel {
+            position: absolute; top: 80px; right: 20px; width: 300px;
+            background: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: none;
+            z-index: 20; font-family: sans-serif;
+        }
+    </style>
 </head>
 <body>
-  <div class="toolbar">
-    <form id="uploadForm">
-      <label for="ifc-input">Selecionar ficheiro .ifc:</label>
-      <input id="ifc-input" name="ifcFile" type="file" accept=".ifc" required />
-      <button type="submit">Upload e Visualizar</button>
-    </form>
-    <span id="status"></span>
-  </div>
+    <header class="header-bar">
+        <div class="logo">A E C O - D E V (IFC)</div>
+        <div class="input-group"><a href="javascript:history.back()" class="btn-link">⬅ Voltar</a></div>
+        <span class="status">Modo Web</span>
+    </header>
 
-  <div id="appContainer">
-    <div id="viewer-container" style="width:100vw; height:80vh;"></div>
-    <aside id="propsPanel" style="display:none;">
-      <h3>Propriedades & Materiais</h3>
-      <div id="propsContent"><em>Clique num elemento para ver propriedades e materiais.</em></div>
-      <button id="closeProps" style="margin-top:10px;">Fechar</button>
-    </aside>
-  </div>
+    <div id="ifc-container"></div>
 
-  <script type="module" src="/js/ifcViewer.js"></script>
+    <div class="upload-box">
+        <h3> Abrir Ficheiro IFC</h3>
+        <input type="file" id="fileInput" accept=".ifc" style="width: 100%;">
+        <div id="loadingText" style="margin-top: 15px; display: none; color: #0696D7; font-weight: bold;">
+             A carregar...
+        </div>
+    </div>
+
+    <div id="info-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin: 0; color: #333;">📋 Detalhes</h3>
+            <button onclick="document.getElementById('info-panel').style.display='none'" style="cursor: pointer; border: none; background: transparent;">✖</button>
+        </div>
+        <div id="info-content" style="color: #555; font-size: 0.9em; line-height: 1.6;"></div>
+    </div>
+
+    <script type="module" src="/js/ifcViewer.js"></script>
 </body>
 </html>
