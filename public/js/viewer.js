@@ -44,7 +44,7 @@ if (btnLoginHeader) btnLoginHeader.onclick = () => window.location.href = '/api/
 if (btnBypass) {
     btnBypass.onclick = () => {
         loginOverlay.classList.add('hidden');
-        statusIndicator.textContent = '⚠️ Modo Demo (Offline)';
+        statusIndicator.textContent = ' Modo Demo (Offline)';
         statusIndicator.style.color = '#ff9800';
         btnLoginHeader.style.display = 'none';
         btnLoadModel.disabled = true;
@@ -56,7 +56,7 @@ if (btnBypass) {
 
 // --- LÓGICA DE VISTA E FILTRO ---
 
-// 1. Toggle View
+// Toggle View
 if (btnToggleView) {
     btnToggleView.onclick = () => {
         isGridView = !isGridView;
@@ -64,16 +64,16 @@ if (btnToggleView) {
     };
 }
 
-// 2. Filtro (Pesquisa)
+// Filtro (Pesquisa)
 if (filterInput) {
     filterInput.addEventListener('keyup', () => {
         updateViewDisplay(); // Atualiza a vista com base no filtro
     });
 }
 
-// 3. Função Mestra de Display
+// Função de Display
 function updateViewDisplay() {
-    // A. Filtrar os dados primeiro
+    // Filtrar os dados primeiro
     const term = filterInput ? filterInput.value.toLowerCase() : "";
     const filtered = allMaterials.filter(mat =>
         mat.name.toLowerCase().includes(term) ||
@@ -81,7 +81,7 @@ function updateViewDisplay() {
         mat.brand.toLowerCase().includes(term)
     );
 
-    // B. Decidir qual vista mostrar
+    // Decidir qual vista mostrar
     if (isGridView) {
         tableContainer.classList.add('hidden');
         materialsGrid.classList.remove('hidden');
@@ -115,7 +115,7 @@ async function checkAuthStatus() {
 
 function onUserAuthenticated() {
     loginOverlay.classList.add('hidden');
-    statusIndicator.textContent = '✅ Ligado à Autodesk';
+    statusIndicator.textContent = 'Ligado à Autodesk';
     statusIndicator.style.color = '#4caf50';
     btnLoginHeader.style.display = 'none';
     btnLoadModel.disabled = false;
@@ -125,12 +125,12 @@ function onUserAuthenticated() {
 
 function onUserNotAuthenticated() {
     loginOverlay.classList.remove('hidden');
-    statusIndicator.textContent = '❌ Não Autenticado';
+    statusIndicator.textContent = 'Não Autenticado';
     btnLoadModel.disabled = true;
 }
 
 
-// --- 2. GESTÃO DE DADOS ---
+// --- GESTÃO DE DADOS ---
 
 async function fetchMaterials() {
     try {
@@ -168,7 +168,7 @@ async function fetchMaterials() {
     }
 }
 
-// RENDER TABELA
+// RENDERIZAR TABELA
 function renderMaterialsTable(materials) {
     const tbody = document.getElementById('materialsTableBody');
     tbody.innerHTML = '';
@@ -203,7 +203,7 @@ function renderMaterialsTable(materials) {
     });
 }
 
-// RENDER GRELHA
+// RENDERIZAR GRELHA
 function renderMaterialsGrid(materials) {
     materialsGrid.innerHTML = '';
     if(materials.length === 0) {
@@ -235,7 +235,7 @@ function renderMaterialsGrid(materials) {
 }
 
 
-// --- 3. MODAIS ---
+// --- MODAIS ---
 
 if(closeModal) closeModal.onclick = () => productModal.classList.add('hidden');
 function openProductDetails(mat) {

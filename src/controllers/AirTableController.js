@@ -6,7 +6,7 @@ const HEADERS = {
     'Content-Type': 'application/json'
 };
 
-// 1. LER MATERIAIS (GET)
+// LER MATERIAIS (GET)
 exports.getMateriais = async (req, res) => {
     try {
         const response = await fetch(AIRTABLE_API_URL, { headers: HEADERS });
@@ -24,7 +24,7 @@ exports.getMateriais = async (req, res) => {
     }
 };
 
-// 2. CRIAR MATERIAL (POST)
+// CRIAR MATERIAL (POST)
 exports.createMaterial = async (req, res) => {
     try {
         // Recebe os dados do Frontend
@@ -64,7 +64,7 @@ exports.createMaterial = async (req, res) => {
     }
 };
 
-// 3. APAGAR MATERIAL (DELETE)
+// APAGAR MATERIAL (DELETE)
 exports.deleteMaterial = async (req, res) => {
     try {
         const { id } = req.params;

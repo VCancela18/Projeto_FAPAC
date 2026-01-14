@@ -1,8 +1,6 @@
-// src/controllers/projectsController.js
-
 const APS_API_URL = process.env.APS_API_URL;
 
-// Função Auxiliar (Repetida - idealmente estaria num ficheiro utilitário)
+// Função Auxiliar
 async function callApsApi(endpoint, accessToken) {
     const response = await fetch(`${APS_API_URL}${endpoint}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
@@ -21,7 +19,7 @@ async function callApsApi(endpoint, accessToken) {
 // Rota APS: /project/v1/hubs/:hub_id/projects
 exports.getProjects = async (req, res, next) => {
   const { hub_id } = req.params;
-  // CORREÇÃO: Usar o token injetado pelo middleware
+  // Usar o token injetado pelo middleware
   const accessToken = req.accessToken;
 
   try {

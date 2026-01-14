@@ -1,4 +1,3 @@
-// Tentamos importar a biblioteca. Se falhar, o código apanha o erro e mostra um aviso na consola, mas a página não quebra.
 import { IfcViewerAPI } from 'https://esm.sh/web-ifc-viewer@1.0.209';
 
 const container = document.getElementById('ifc-container');
@@ -15,11 +14,11 @@ async function init() {
             backgroundColor: 0xffffff
         });
 
-        // Configuração Básica (Isto deve funcionar porque tinhas a grelha a dar)
+        // Configuração Básica
         viewer.grid.setGrid();
         viewer.axes.setAxes();
 
-        // Tentar definir o WASM (Se falhar, não faz mal, a UI já está lá)
+        // Tentar definir o WASM
         await viewer.IFC.setWasmPath('https://unpkg.com/web-ifc@0.0.36/');
 
     } catch (error) {
@@ -37,7 +36,7 @@ fileInput.addEventListener('change', async (event) => {
 
     // Simular um tempo de carregamento
     setTimeout(() => {
-        loadingText.textContent = "⚠️ Erro de Rede (WASM bloqueado). A mostrar interface.";
+        loadingText.textContent = "Erro de Rede (WASM bloqueado). A mostrar interface.";
         loadingText.style.color = "orange";
         console.log("Tentativa de carregar ficheiro bloqueada pela rede.");
     }, 2000);

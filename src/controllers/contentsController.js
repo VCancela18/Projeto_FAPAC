@@ -1,8 +1,6 @@
-// src/controllers/contentsController.js
-
 const APS_API_URL = process.env.APS_API_URL;
 
-// Função Auxiliar (Repetida - idealmente estaria num ficheiro utilitário)
+// Função Auxiliar
 async function callApsApi(endpoint, accessToken) {
     const response = await fetch(`${APS_API_URL}${endpoint}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
@@ -19,7 +17,7 @@ async function callApsApi(endpoint, accessToken) {
 }
 
 
-// --- 1. LISTAR PASTAS DE NÍVEL SUPERIOR (TOP FOLDERS) ---
+// --- LISTAR PASTAS DE NÍVEL SUPERIOR (TOP FOLDERS) ---
 // Rota APS: /project/v1/hubs/:hub_id/projects/:project_id/topFolders
 exports.getTopFolders = async (req, res, next) => {
   const { hub_id, project_id } = req.params;
@@ -36,7 +34,7 @@ exports.getTopFolders = async (req, res, next) => {
 };
 
 
-// --- 2. LISTAR CONTEÚDO DE UMA PASTA ESPECÍFICA ---
+// --- LISTAR CONTEÚDO DE UMA PASTA ESPECÍFICA ---
 exports.getFolderContents = async (req, res, next) => {
     // project_id é necessário para a URL da API, mesmo que folder_id identifique a pasta
     const { project_id, folder_id } = req.params;
@@ -52,7 +50,7 @@ exports.getFolderContents = async (req, res, next) => {
 };
 
 
-// --- 3. LISTAR VERSÕES DE UM ITEM ---
+// --- LISTAR VERSÕES DE UM ITEM ---
 exports.getItemVersions = async (req, res, next) => {
     const { project_id, item_id } = req.params;
     const accessToken = req.accessToken;
@@ -65,7 +63,7 @@ exports.getItemVersions = async (req, res, next) => {
         next(error);
     }
 };
-// EXPORTAÇÃO ALTERADA: Exportar todas as funções
+// Exportar todas as funções
 module.exports = {
     getTopFolders: exports.getTopFolders,
     getFolderContents: exports.getFolderContents,

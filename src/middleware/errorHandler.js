@@ -1,4 +1,3 @@
-// Global Error Middleware (Custom Express middleware functions)
 module.exports = (err, req, res, next) => {
 
     console.error('Erro Capturado Globalmente:', err.message, err.stack);
