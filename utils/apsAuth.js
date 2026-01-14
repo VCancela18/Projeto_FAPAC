@@ -1,25 +1,25 @@
-const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_CALLBACK_URL, APS_AUTH_URL } = process.env;
+const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_CALLBACK_URL } = process.env;
 
-// O endpoint de token (Auth 3-Legged) é fixo, mas a URL do token pode mudar
-const TOKEN_URL = APS_AUTH_URL || 'https://signin.autodesk.com/?flowId=3AcfinQNDW';
+// --- Usar os Endpoints Oficiais da API (não o site de signin) ---
+const APS_BASE_URL = 'https://developer.api.autodesk.com';
+const AUTHORIZE_ENDPOINT = `${APS_BASE_URL}/authentication/v2/authorize`;
+const TOKEN_ENDPOINT = `${APS_BASE_URL}/authentication/v2/token`;
 
 /**
- * 1. Constrói e redireciona o utilizador para a página de autorização do Autodesk.
- * @param {string[]} scopes - Permissões solicitadas (ex: ['data:read', 'viewables:read']).
+ * Constrói e redireciona o utilizador para a página de autorização do Autodesk.
+ * @param {string[]} scopes - Permissões solicitadas.
  * @returns {string} - URL de redirecionamento.
  */
 function getAuthorizationUrl(scopes) {
-    // Escopos mínimos para o projeto (leitura de dados e visualização)
     const scopeString = scopes.join(' ');
-    const authUrl = 'https://signin.autodesk.com/?flowId=3AcfinQNDW';
 
-    return `${authUrl}?response_type=code&client_id=${APS_CLIENT_ID}&redirect_uri=${APS_CALLBACK_URL}&scope=${scopeString}`;
+    // --- CORREÇÃO 2: Sintaxe correta do URL ---
+    // A URL base é limpa, e o primeiro parâmetro usa '?', os seguintes usam '&'
+    return `${AUTHORIZE_ENDPOINT}?response_type=code&client_id=${APS_CLIENT_ID}&redirect_uri=${APS_CALLBACK_URL}&scope=${scopeString}`;
 }
 
 /**
- * 2. Troca o código de autorização (obtido após login do utilizador) por um Access Token.
- * @param {string} code - Código de autorização.
- * @returns {object} - Objeto com access_token, refresh_token, etc.
+ * Troca o código de autorização por um Access Token.
  */
 async function getAccessToken(code) {
     const body = new URLSearchParams({
@@ -30,7 +30,8 @@ async function getAccessToken(code) {
         redirect_uri: APS_CALLBACK_URL
     });
 
-    const response = await fetch(TOKEN_URL, {
+    // Usa o endpoint correto da API (v2/token)
+    const response = await fetch(TOKEN_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body
@@ -44,9 +45,7 @@ async function getAccessToken(code) {
 }
 
 /**
- * 3. Obtém o Access Token de 2 pernas (Server-to-Server).
- * Usado para operações de backend onde não há utilizador (ex: Webhooks).
- * @returns {string} - Access Token.
+ * Obtém o Access Token de 2 (Server-to-Server).
  */
 async function getInternalToken(scopes = ['data:read', 'bucket:read']) {
     const scopeString = scopes.join(' ');
@@ -58,7 +57,8 @@ async function getInternalToken(scopes = ['data:read', 'bucket:read']) {
         scope: scopeString
     });
 
-    const response = await fetch(TOKEN_URL, {
+    // Usa o endpoint correto da API (v2/token)
+    const response = await fetch(TOKEN_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body
