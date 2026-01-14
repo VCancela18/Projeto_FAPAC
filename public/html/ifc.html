@@ -3,57 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AECO-DEV | Leitor IFC</title>
+    <title>AECO-DEV | Plataforma BIM</title>
     <link rel="stylesheet" href="/css/styles.css">
 
     <style>
         body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
 
+        /* O Ambiente 3D */
         #ifc-container {
             position: absolute; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px);
             background: linear-gradient(to bottom, #e0eafc, #cfdef3); outline: none;
+            z-index: 1;
         }
 
+        /* Caixa de Upload */
         .upload-box {
             position: absolute; top: 80px; left: 20px;
             background: white; padding: 20px;
-            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             z-index: 10; width: 300px;
         }
 
+        /* MENU DE FILTROS (Agora sempre visível) */
+        #filter-panel {
+            position: absolute; top: 230px; /* Logo abaixo do upload */
+            left: 20px;
+            background: white; padding: 15px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 10; width: 300px; font-family: sans-serif;
+            display: block; /* FORÇAR VISIBILIDADE */
+        }
+
+        /* PAINEL DE INFO (Simulação) */
         #info-panel {
             position: absolute; top: 80px; right: 20px; width: 300px;
             background: white; padding: 20px; border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             z-index: 20; font-family: sans-serif;
+            /* Deixamos visível para demonstrar a UI */
+            display: block;
         }
+
+        /* Estilo das Checkboxes */
+        .layer-item {
+            display: flex; align-items: center; margin: 8px 0; cursor: pointer;
+            padding: 5px; border-radius: 4px; transition: background 0.2s;
+        }
+        .layer-item:hover { background-color: #f5f5f5; }
+        .layer-item input { margin-right: 10px; transform: scale(1.2); cursor: pointer; }
     </style>
 </head>
 <body>
     <header class="header-bar">
-        <div class="logo">A E C O - D E V (IFC)</div>
+        <div class="logo">A E C O - D E V (BIM)</div>
         <div class="input-group"><a href="javascript:history.back()" class="btn-link">⬅ Voltar</a></div>
-        <span class="status">Modo Web</span>
+        <span class="status">Modo Demonstração</span>
     </header>
 
     <div id="ifc-container"></div>
 
     <div class="upload-box">
-        <h3> Abrir Ficheiro IFC</h3>
+        <h3 style="margin-top:0;">Gestão de Ficheiros</h3>
+        <p style="font-size: 0.8em; color: #666;">Carregar modelo IFC para visualização.</p>
         <input type="file" id="fileInput" accept=".ifc" style="width: 100%;">
-        <div id="loadingText" style="margin-top: 15px; display: none; color: #0696D7; font-weight: bold;">
-             A carregar...
+        <div id="loadingText" style="margin-top: 10px; display: none; color: #0696D7; font-weight: bold;">
+            A processar geometria...
         </div>
+    </div>
+
+    <div id="filter-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            <h4 style="margin: 0; color: #333;">Controlo de Visibilidade</h4>
+            <span style="font-size: 0.8em; color: #888;">(Camadas)</span>
+        </div>
+
+        <label class="layer-item"><input type="checkbox" checked onclick="simularClick('Paredes')"> Paredes Estruturais</label>
+        <label class="layer-item"><input type="checkbox" checked onclick="simularClick('Lajes')"> Lajes / Pavimentos</label>
+        <label class="layer-item"><input type="checkbox" checked onclick="simularClick('Janelas')"> Caixilharia (Janelas)</label>
+        <label class="layer-item"><input type="checkbox" checked onclick="simularClick('Portas')"> Portas Interiores</label>
+        <label class="layer-item"><input type="checkbox" checked onclick="simularClick('Telhado')"> Cobertura / Telhado</label>
+        <label class="layer-item"><input type="checkbox" checked onclick="simularClick('Mobiliario')"> Mobiliário e Equipamento</label>
     </div>
 
     <div id="info-panel">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h3 style="margin: 0; color: #333;">📋 Detalhes</h3>
+            <h3 style="margin: 0; color: #333;">Propriedades BIM</h3>
             <button onclick="document.getElementById('info-panel').style.display='none'" style="cursor: pointer; border: none; background: transparent;">✖</button>
         </div>
-        <div id="info-content" style="color: #555; font-size: 0.9em; line-height: 1.6;"></div>
+        <div id="info-content" style="color: #555; font-size: 0.9em; line-height: 1.6;">
+            <p style="background: #eef; padding: 10px; border-radius: 4px; border-left: 3px solid #0696D7;">
+                 <strong>Exemplo de Dados:</strong><br>
+                Selecione um elemento 3D para ver as suas especificações técnicas (Material, Dimensões, Custo).
+            </p>
+            <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+            <strong>Nome:</strong> <span style="color:#999;">(Nenhum selecionado)</span><br>
+            <strong>Tipo IFC:</strong> <span style="color:#999;">-</span><br>
+            <strong>ID Global:</strong> <span style="color:#999;">-</span>
+        </div>
     </div>
 
     <script type="module" src="/js/ifcViewer.js"></script>
+
+    <script>
+        function simularClick(camada) {
+            console.log(`[Interface] Camada alterada: ${camada}`);
+            // Aqui poderias adicionar um 'toast' ou alerta visual se quisesses
+        }
+    </script>
+    <footer style="
+        position: fixed; bottom: 0; left: 0; width: 100%;
+        background: #333; color: white; text-align: center;
+        padding: 10px; font-size: 0.8em; z-index: 100;">
+        AECO-DEV © 2025 | Desenvolvido para a UC FAPAC | Versão 1.0.2
+    </footer>
 </body>
+
 </html>
