@@ -1,12 +1,14 @@
-// src/routes/materiaisRoutes.js
-
 const express = require('express');
 const router = express.Router();
-const { getMateriais, getMaterialById } = require('../controllers/AirTableController');
+const controller = require('../controllers/AirTableController');
 
-// GET /api/materiais
-router.get('/', getMateriais);
-// GET /api/materiais/:id
-router.get('/:id', getMaterialById);
+// Rota para Ler (GET /api/materiais)
+router.get('/', controller.getMateriais);
+
+// Rota para Criar (POST /api/materiais)
+router.post('/', controller.createMaterial);
+
+// Rota para Apagar (DELETE /api/materiais/:id)
+router.delete('/:id', controller.deleteMaterial);
 
 module.exports = router;

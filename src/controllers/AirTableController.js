@@ -1,59 +1,89 @@
-// src/controllers/AirtableController.js
+require('dotenv').config();
 
-const fetch = global.fetch || require('node-fetch');
-const { AIRTABLE_API_TOKEN, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME = 'Materiais' } = process.env;
-
-if (!AIRTABLE_API_TOKEN || !AIRTABLE_BASE_ID) {
-  console.error('Missing AIRTABLE_API_TOKEN or AIRTABLE_BASE_ID in .env');
-}
-
-const makeUrl = (path = '') => `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}${path}`;
-
-const commonHeaders = {
-  'Authorization': `Bearer ${AIRTABLE_API_TOKEN}`,
-  'Content-Type': 'application/json'
+const AIRTABLE_API_URL = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/${process.env.AIRTABLE_TABLE_NAME}`;
+const HEADERS = {
+    'Authorization': `Bearer ${process.env.AIRTABLE_API_TOKEN}`,
+    'Content-Type': 'application/json'
 };
 
-exports.getMateriais = async (req, res, next) => {
-  try {
-    if (!AIRTABLE_API_TOKEN || !AIRTABLE_BASE_ID) {
-      return res.status(500).json({ error: 'Missing Airtable credentials' });
+// 1. LER MATERIAIS (GET)
+exports.getMateriais = async (req, res) => {
+    try {
+        const response = await fetch(AIRTABLE_API_URL, { headers: HEADERS });
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error("Erro Airtable:", data);
+            return res.status(response.status).json({ error: data });
+        }
+
+        res.json(data.records);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao conectar ao Airtable' });
     }
-
-    const response = await fetch(makeUrl(), { method: 'GET', headers: commonHeaders });
-
-    if (!response.ok) {
-      const text = await response.text();
-      return res.status(response.status).json({ error: text });
-    }
-
-    const data = await response.json();
-    const materials = (data.records || []).map(r => ({ id: r.id, ...r.fields }));
-    res.json({ ok: true, count: materials.length, data: materials });
-  } catch (err) {
-    next(err);
-  }
 };
 
-exports.getMaterialById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    if (!id) return res.status(400).json({ error: 'Missing id param' });
+// 2. CRIAR MATERIAL (POST)
+exports.createMaterial = async (req, res) => {
+    try {
+        // Recebe os dados do Frontend
+        const { name, category, brand, price, supplier, description, techParams } = req.body;
 
-    if (!AIRTABLE_API_TOKEN || !AIRTABLE_BASE_ID) {
-      return res.status(500).json({ error: 'Missing Airtable credentials' });
+        // Prepara o corpo para o Airtable (Mapeamento de colunas)
+        // ATENÇÃO: Os nomes à esquerda têm de ser IGUAIS às colunas no Airtable
+        const recordData = {
+            fields: {
+                "Nome do Material": name,
+                "Categoria": category,
+                "Marca": brand,
+                "Preço": parseFloat(price) || 0,
+                "Fornecedor": supplier,
+                "Descrição": description,
+                "Parâmetros Técnicos": techParams // A coluna nova que pediste
+            }
+        };
+
+        const response = await fetch(AIRTABLE_API_URL, {
+            method: 'POST',
+            headers: HEADERS,
+            body: JSON.stringify(recordData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error("Erro ao criar:", data);
+            return res.status(response.status).json({ error: data });
+        }
+
+        res.json(data); // Devolve o material criado com o ID novo
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao criar material' });
     }
+};
 
-    const response = await fetch(makeUrl(`/${id}`), { method: 'GET', headers: commonHeaders });
+// 3. APAGAR MATERIAL (DELETE)
+exports.deleteMaterial = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteUrl = `${AIRTABLE_API_URL}/${id}`;
 
-    if (!response.ok) {
-      const text = await response.text();
-      return res.status(response.status).json({ error: text });
+        const response = await fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: HEADERS
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return res.status(response.status).json({ error: data });
+        }
+
+        res.json({ message: 'Apagado com sucesso', id: data.id });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao apagar material' });
     }
-
-    const record = await response.json();
-    res.json({ ok: true, data: { id: record.id, ...record.fields } });
-  } catch (err) {
-    next(err);
-  }
 };
